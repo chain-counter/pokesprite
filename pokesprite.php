@@ -32,10 +32,10 @@
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
 // and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -43,7 +43,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 // ---------------------------------------------------------------------------
 //
 // All files in the `icons` directory are included in this package for reasons
@@ -83,6 +83,23 @@ $revision = trim(shell_exec('git rev-list HEAD --count 2> /dev/null'));
 $revision = $revision ? 'r'.$revision : '[unknown]';
 $cl_settings['revision'] = $revision;
 
+// Retrieve the version number from the pkg-info.json file.
+$pkg_info = json_decode(file_get_contents(Settings::get('resources_dir').'pkg-info.json'), true);
+$version = $pkg_info['version'];
+$cl_settings['version'] = $version;
+
+// Merge the user's command line arguments into the settings.
+Settings::load_settings($cl_settings);
+
+if ($usage->needs_version) {
+    // Display version and exit.
+    $usage->load_tpl_file(
+        Settings::get('resources_dir').
+        Settings::get('version_tpl')
+    );
+    $usage->display_version();
+    exit;
+}
 if ($usage->needs_usage) {
     // Display usage and exit.
     $usage->load_tpl_file(
@@ -92,8 +109,6 @@ if ($usage->needs_usage) {
     $usage->display_usage();
     exit;
 }
-// Merge the user's command line arguments into the settings.
-Settings::load_settings($cl_settings);
 
 // Export the settings variables so that we can use them here.
 $vars = array_keys(Settings::$settings);
@@ -116,6 +131,7 @@ if (!function_exists('imagecreatefrompng')) {
 // Print basic program info.
 print(I18n::lf('info', array(
     $title_str,
+    $version,
     $revision,
     $website_txt,
     $copyright_gf
@@ -179,11 +195,11 @@ $icon_stack = new IconStack();
 if ($include_pkmn) {
     $icon_stack->parse_data_file($dir_data.$file_pkmn_data, $pkmn_range);
     $pkmn_data = $icon_stack->get_pkmn_data();
-    
+
     // Check if the data is there.
     $has_data = $icon_stack->has_pkmn_data();
     $has_imgs = $icon_stack->has_pkmn_images();
-    
+
     if (!$has_data) {
         print(I18n::lf('no_data', array($file_pkmn_data, $dir_data)));
         die();
@@ -197,6 +213,25 @@ else {
     // If we aren't including Pokémon, keep an empty array
     // to avoid iteration warnings.
     $pkmn_data = array();
+}
+
+// Retrieve icons from the set.
+if ($include_icon_sets) {
+    $icon_stack->parse_icons_data_file($dir_data.$file_icon_data, $icon_range);
+    $icon_data = $icon_stack->get_icon_data();
+
+    // Check if the data is there.
+    $has_data = $icon_stack->has_icon_data();
+    $has_imgs = $icon_stack->has_icon_images();
+
+    if (!$has_data) {
+        print(I18n::lf('no_icons_data', array($file_icon_data, $dir_data)));
+        die();
+    }
+    if (!$has_imgs) {
+        print(I18n::l('no_icon_images'));
+        die();
+    }
 }
 
 // Generate and return the entire Pokémon icon stack.
@@ -288,7 +323,7 @@ if ($generate_optimized === true) {
     if (file_exists($dir_output.$img_output)) {
         unlink($dir_output.$img_output);
     }
-    $crush_cmd = $pngcrush_path.' -l 9 -q -text b author "Pokémon Sprite Generator r'.$revision.'" -text b copyright "'.$copyright_gf.'" '.$dir_output.$img_output_tmp.' '.$dir_output.$img_output;
+    $crush_cmd = $pngcrush_path.' -l 9 -q -text b author "Pokémon Sprite Generator v'.$version.' r'.$revision.'" -text b copyright "'.$copyright_gf.'" '.$dir_output.$img_output_tmp.' '.$dir_output.$img_output;
     exec($crush_cmd);
 
     if (file_exists($dir_output.$img_output)) {
@@ -340,6 +375,7 @@ $icon_js->set_icon_sizes($set_sizes);
 $base_vars = array(
     'title_str' => $title_str,
     'revision' => $revision,
+    'version' => $version,
     'website_txt' => $website_txt,
     'copyright_str' => $copyright_str,
     'copyright_gf' => $copyright_gf,

@@ -14,16 +14,16 @@ class I18n
 {
     /** @var mixed[] Language strings. */
     private static $lines = array();
-    
+
     /** @var string Default language. */
     private static $default_lang = 'en_us';
-    
+
     /** @var string Current language. */
     private static $curr_lang = '';
-    
+
     /** @var mixed[] Output filters. */
     private static $filters = array();
-    
+
     /** @var string[] Default language strings. */
     private static $DEFAULTS = array(
         // American English (en_us).
@@ -37,7 +37,7 @@ class I18n
             'overview_class' => 'Class',
             'overview_file' => 'File',
             'generated_on' => "Generated on %s.",
-            'info' => "<frm=cyan::bold>%s %s %s</frm>\n<frm=purple>Generates optimized Pokémon SCSS sprite\n%s\n\n</frm>",
+            'info' => "<frm=cyan::bold>%s v%s (%s) %s</frm>\n<frm=purple>Generates optimized Pokémon SCSS sprite\n%s\n\n</frm>",
             'icon_dir_failure' => "<frm=red>Couldn't open icon directory (%s). Skipping.</frm>\n",
             'dir_create' => "Creating output directory.\n",
             'dir_error' => "<frm=red>Couldn't create directories.</frm>\n",
@@ -46,7 +46,9 @@ class I18n
             'no_cli' => "<frm=red>We don't seem to be running via the command line. Keep in mind this tool was designed for command line usage, and hasn't been tested in other situations.</frm>\n",
             'pngcrush_missing' => "<frm=red>pngcrush seems to be missing (path: %s). By default, it needs to be in the tools directory, chmodded to be executable, and at least version 1.7.60.\nImage will not be optimized by pngcrush.</frm>\n",
             'no_images' => "<frm=red>Couldn't find the source images. Make sure they're in %sregular/ and %sshiny/.</frm>\n",
+            'no_icon_images' => "<frm=red>Couldn't find the icon images.</frm>\n",
             'no_data' => "<frm=red>Couldn't find the Pokémon data file. Make sure it's named %s and is placed in the %s directory.</frm>\n",
+            'no_icons_data' => "<frm=red>Couldn't find the icons data file. Make sure it's named %s and is placed in the %s directory.</frm>\n",
             'sprite_stats' => "\nGenerating %dx%d sprite composed of %d images.\nMemory usage will be about %s.\n",
             'sprite_ready' => "\n<frm=green>Finished preparing the sprite image.</frm>\n",
             'sprite_saving' => "Saving sprite image to %s.\n",
@@ -66,7 +68,7 @@ class I18n
             'entry_added' => "<frm=green>  Added file </frm><frm=green::bold>%s</frm><frm=green> for entry </frm><frm=green::bold>%s</frm><frm=green>.</frm>\n",
             'arg_error_unknown' => 'unknown error',
             'arg_error_include_right' => '--include-right must be 0, 1 or 2, e.g. --include-right=1',
-            'arg_error_icon_sets' => '--icon-sets must be a comma-separated list, e.g. --icon-sets=apricorn,pokeball',
+            'arg_error_icon_sets' => '--icon-sets must be a comma-separated list, e.g. --icon-sets=apricorn,ball',
             'arg_error_file_exts' => '--file-exts must be a comma-separated list, e.g. --file-exts=png,jpg',
             'arg_error_tpl' => "\n<frm=red>Error: %s</frm>\n",
             'tasks_overview' => "List of tasks to perform:\n",
@@ -97,7 +99,9 @@ class I18n
             'no_cli' => "<frm=red>We don't seem to be running via the command line. Keep in mind this tool was designed for command line usage, and hasn't been tested in other situations.</frm>\n",
             'pngcrush_missing' => "<frm=red>pngcrush seems to be missing (path: %s). By default, it needs to be in the tools directory, chmodded to be executable, and at least version 1.7.60.\nImage will not be optimized by pngcrush.</frm>\n",
             'no_images' => "<frm=red>Couldn't find the source images. Make sure they're in %sregular/ and %sshiny/.</frm>\n",
+            'no_icon_images' => "<frm=red>Couldn't find the icon images.</frm>\n",
             'no_data' => "<frm=red>Couldn't find the Pokémon data file. Make sure it's named %s and is placed in the %s directory.</frm>\n",
+            'no_icons_data' => "<frm=red>Couldn't find the icons data file. Make sure it's named %s and is placed in the %s directory.</frm>\n",
             'sprite_stats' => "\nGenerating %dx%d sprite composed of %d images.\nMemory usage will be about %s.\n",
             'sprite_ready' => "\n<frm=green>Finished preparing the sprite image.</frm>\n",
             'sprite_saving' => "Saving sprite image to %s.\n",
@@ -117,7 +121,7 @@ class I18n
             'entry_added' => "<frm=green>  Added file </frm><frm=green::bold>%s</frm><frm=green> for entry </frm><frm=green::bold>%s</frm><frm=green>.</frm>\n",
             'arg_error_unknown' => 'unknown error',
             'arg_error_include_right' => '--include-right must be 0, 1 or 2, e.g. --include-right=1',
-            'arg_error_icon_sets' => '--icon-sets must be a comma-separated list, e.g. --icon-sets=apricorn,pokeball',
+            'arg_error_icon_sets' => '--icon-sets must be a comma-separated list, e.g. --icon-sets=apricorn,ball',
             'arg_error_file_exts' => '--file-exts must be a comma-separated list, e.g. --file-exts=png,jpg',
             'arg_error_tpl' => "\n<frm=red>Error: %s</frm>\n",
             'tasks_overview' => "List of tasks to perform:\n",
@@ -130,7 +134,7 @@ class I18n
             'task_scss' => "  Generate SCSS file with basic styling attributes\n",
         ),
     );
-    
+
     /**
      * Populates the language array, optionally for a specific language.
      *
@@ -149,7 +153,7 @@ class I18n
         }
         static::$lines[$lang] = array_merge(static::$lines[$lang], $lines);
     }
-    
+
     /**
      * Adds a filter to the i18n output.
      *
@@ -162,7 +166,7 @@ class I18n
     {
         static::$filters[] = $ref;
     }
-    
+
     /**
      * Applies queued output filters to a string.
      *
@@ -175,7 +179,7 @@ class I18n
         }
         return $str;
     }
-    
+
     /**
      * Returns a formatted language string by its key, the
      * vsprintf replacement arguments, and optionally its language.
@@ -192,7 +196,7 @@ class I18n
         $line_str = static::l($line, $lang);
         return vsprintf($line_str, $args);
     }
-    
+
     /**
      * Returns a line from the language lines array by its key, and
      * optionally a language.
@@ -207,7 +211,7 @@ class I18n
         }
         return static::apply_output_filters(static::$lines[$lang][$line]);
     }
-    
+
     /**
      * Sets the active program language.
      *
@@ -217,7 +221,7 @@ class I18n
     {
         static::$curr_lang = $lang;
     }
-    
+
     /**
      * Merges the defaults into the language array.
      */
